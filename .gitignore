@@ -1,0 +1,10 @@
+# dsependency directory
+node_modules/
+
+# database
+database.db
+
+# secrets
+.env
+certificate.pem
+key.pem
