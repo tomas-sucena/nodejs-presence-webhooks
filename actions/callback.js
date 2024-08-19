@@ -1,5 +1,4 @@
 const auth = require('../utils/auth');
-const { DB } = require('../utils/db');
 
 // GET /callback
 module.exports = async function (req, res) {
