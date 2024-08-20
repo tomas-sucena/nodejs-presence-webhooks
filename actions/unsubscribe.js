@@ -2,8 +2,6 @@ const auth = require('../utils/auth');
 const { newSubscription } = require('../utils/subscription');
 
 module.exports = async function (req, res) {
-    const subscriptionId = req.session.subscriptionId;
-
     // fetch the Microsoft Graph client
     const { msalClient, userAccountId } = req.app.locals;
     const client = auth.getClient(msalClient, userAccountId);
@@ -13,6 +11,8 @@ module.exports = async function (req, res) {
 
     try {
         // delete the current subscription
+        const subscriptionId = db.getSubscription();
+
         await client.api(`/subscriptions/${subscriptionId}`)
             .delete();
 
@@ -23,10 +23,7 @@ module.exports = async function (req, res) {
         // we want to track
         if (db.countUsers() > 0) {
             // create a new subscription
-            const subscription = await newSubscription(client, db, false);
-
-            // save the subscription ID
-            req.session.subscriptionId = subscription.id;
+            await newSubscription(client, db, false);
         }
 
         res.redirect('/home');

@@ -1,6 +1,44 @@
 const Database = require('better-sqlite3');
 
 /**
+ * Adds the new active subscription to the database.
+ * @param {Database} db the database
+ * @param {string} id the ID of the subscription 
+ */
+function addSubscription(db, id) {
+    db.prepare('INSERT INTO subscriptions (id) VALUES (?)')
+        .run(id);
+}
+
+function removeSubscription(db) {
+    const subscription = db.prepare('SELECT * FROM subscriptions')
+        .get();
+
+    // if a subscription exists, delete it
+    // and return its ID
+    if (subscription) {
+        db.prepare('DELETE FROM subscriptions where id = ?')
+            .get(subscription.id);
+
+        return subscription.id;
+    }
+}
+
+/**
+ * Returns the ID of the current active subscription, if any.
+ * @param {Database} db the database 
+ * @returns the ID of the current active subscription, 'undefined' otherwise
+ */
+function getSubscription(db) {
+    const subscription = db.prepare('SELECT * FROM subscriptions')
+        .get();
+
+    if (subscription) {
+        return subscription.id;
+    }
+}
+
+/**
  * Adds a new user to the list of users whose presences changes we are subscribing to.
  * @param {Database} db the database
  * @param {string} id the ID of the user whose presence changes we subscribed to  
@@ -9,7 +47,7 @@ const Database = require('better-sqlite3');
  */
 function addUser(db, {id, mail, displayName}) {
     // store the subscription in the table
-    db.prepare('INSERT INTO subscriptions (id, mail, displayName) VALUES (?, ?, ?)')
+    db.prepare('INSERT INTO users (id, mail, displayName) VALUES (?, ?, ?)')
         .run([id, mail, displayName]);
 };
 
@@ -20,13 +58,13 @@ function addUser(db, {id, mail, displayName}) {
  */
 function removeUser(db, mail) {
     // prepare the INSERT statement
-    const subscription = db.prepare('SELECT id FROM subscriptions WHERE mail = ?')
+    const subscription = db.prepare('SELECT id FROM users WHERE mail = ?')
         .get(mail);
     
     // if a subscription exists, delete it
     // and return its ID
     if (subscription) {
-        db.prepare('DELETE FROM subscriptions WHERE mail = ?')
+        db.prepare('DELETE FROM users WHERE mail = ?')
             .run(mail);
     }
 
@@ -39,7 +77,7 @@ function removeUser(db, mail) {
  * @returns an array containing the profile information (email and display name) of the users whose presence changes we are subscribed to
  */
 function getUsers(db) {
-    return db.prepare('SELECT mail, displayName from subscriptions')
+    return db.prepare('SELECT mail, displayName from users')
         .all();
 }
 
@@ -49,7 +87,7 @@ function getUsers(db) {
  * @returns the number of users whose presence changes we are currently subscribed to
  */
 function countUsers(db) {
-    return db.prepare('SELECT count(*) FROM subscriptions')
+    return db.prepare('SELECT count(*) FROM users')
         .get()
         ["count(*)"];
 }
@@ -59,7 +97,7 @@ function countUsers(db) {
  * @param {Database} db the database
  */
 function listUserIDs(db) {
-    return db.prepare('SELECT id FROM subscriptions')
+    return db.prepare('SELECT id FROM users')
         .all()
         .map(obj => `'${obj.id}'`)
         .join(',');
@@ -69,9 +107,22 @@ function DB(filePath) {
     // initialize the database
     const db = new Database(filePath ?? ':memory:');
 
-    // create the table
-    db.exec(`DROP TABLE IF EXISTS subscriptions;
+    // create the subscriptions' table
+    db.exec(`
+        DROP TABLE IF EXISTS subscriptions;
         CREATE TABLE subscriptions (
+            id TEXT PRIMARY KEY
+        );
+    `);
+
+    this.addSubscription = addSubscription.bind(null, db);
+    this.removeSubscription = removeSubscription.bind(null, db);
+    this.getSubscription = getSubscription.bind(null, db);
+
+    // create the users' table
+    db.exec(`
+        DROP TABLE IF EXISTS users;
+        CREATE TABLE users (
             id TEXT PRIMARY KEY,
             mail TEXT NOT NULL UNIQUE,
             displayName TEXT NOT NULL

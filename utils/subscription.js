@@ -10,11 +10,13 @@ const crypto = require('../utils/crypto');
 async function newSubscription(client, db, rich) {
     // ensure a certificate exists
     // this is required for rich notifications
-    await crypto.createSelfSignedCertificateIfNotExists(
-        `../${process.env.CERTIFICATE_PATH}`,
-        `../${process.env.PRIVATE_KEY_PATH}`,
-        process.env.PRIVATE_KEY_PASSWORD,
-    );
+    if (rich) {
+        await crypto.createSelfSignedCertificateIfNotExists(
+            `../${process.env.CERTIFICATE_PATH}`,
+            `../${process.env.PRIVATE_KEY_PATH}`,
+            process.env.PRIVATE_KEY_PASSWORD,
+        );
+    }
 
     // write the payload
     const host = process.env.NGROK_PROXY;
@@ -41,6 +43,9 @@ async function newSubscription(client, db, rich) {
     // create the subscription
     const subscription = await client.api('/subscriptions')
         .post(payload);
+
+    // add the subscription to the database
+    db.addSubscription(subscription.id);
 
     return subscription;
 }

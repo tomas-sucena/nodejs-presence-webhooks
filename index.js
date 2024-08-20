@@ -13,6 +13,7 @@ const logout = require('./actions/logout');
 const subscribe = require('./actions/subscribe')
 const unsubscribe = require('./actions/unsubscribe');
 
+const auth = require('./utils/auth');
 const { DB } = require('./utils/db');
 
 // initialize the application
@@ -57,5 +58,27 @@ app.use(function (req, res) {
     return res.status(404).redirect('/error');
 });
 
+// initialize the server
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`Listening on port ${port}...`));
+const server = app.listen(port, () => console.log(`Listening on port ${port}...`));
+
+server.on('close', async function (_) {
+    // fetch the database
+    const db = app.locals.db;
+
+    // if there is an active subscription when the server ends,
+    // cancel it
+    const subscriptionId = db.removeSubscription();
+
+    if (subscriptionId) {
+        // fetch the Microsoft Graph client
+        const { msalClient, userAccountId } = app.locals;
+        const client = auth.getClient(msalClient, userAccountId);
+
+        await client.api(`/subscriptions/${subscriptionId}`)
+            .delete();
+    }
+});
+
+process.on('SIGTERM', () => server.close());
+process.on('SIGINT', () => server.close());

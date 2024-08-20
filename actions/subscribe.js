@@ -24,12 +24,9 @@ module.exports = async function (req, res) {
         db.addUser(user);
 
         // verify if there is already a subscription
-        let subscription = (await client.api('/subscriptions')
-                .get())
-                .value
-                .find(sub => sub.applicationId === process.env.OAUTH_CLIENT_ID);
+        // if so, delete if
+        let subscription = db.getSubscription();
 
-        // if a subscription exists, delete it
         if (subscription) {
             await client.api(`/subscriptions/${subscription.id}`)
                 .delete();
@@ -37,9 +34,6 @@ module.exports = async function (req, res) {
 
         // create the new subscription
         subscription = await newSubscription(client, db, false);
-
-        // save the subscription ID
-        req.session.subscriptionId = subscription.id;
         console.log(`Subscribed to Teams presence changes (${subscription.id})`);
 
         res.redirect('/home');

@@ -6,17 +6,17 @@ module.exports = async function (req, res) {
     const { msalClient, userAccountId } = req.app.locals;
     const client = auth.getClient(msalClient, userAccountId);
 
+    // fetch the database
+    const db = req.app.locals.db;
+
     try {
         // cancel the subscription, if it exists
-        const subscriptionId = req.session.subscriptionId;
+        const subscriptionId = db.removeSubscription();
 
         if (subscriptionId) {
             await client.api(`/subscriptions/${subscriptionId}`)
                 .delete();
         }
-
-        // invalidate the subscription
-        delete req.session.subscriptionId;
 
         // remove the user's account from MSAL cache
         const userAccount = await msalClient
