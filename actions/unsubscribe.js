@@ -1,5 +1,5 @@
 const auth = require('../utils/auth');
-const { newSubscription } = require('../utils/subscription');
+const { newSubscription, cancelSubscription } = require('../utils/subscription');
 
 module.exports = async function (req, res) {
     // fetch the Microsoft Graph client
@@ -11,10 +11,7 @@ module.exports = async function (req, res) {
 
     try {
         // delete the current subscription
-        const subscriptionId = db.getSubscription();
-
-        await client.api(`/subscriptions/${subscriptionId}`)
-            .delete();
+        await cancelSubscription(client, db);
 
         // remove the user from the database
         db.removeUser(req.body.mail);

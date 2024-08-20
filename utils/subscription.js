@@ -50,6 +50,26 @@ async function newSubscription(client, db, rich) {
     return subscription.id;
 }
 
+/**
+ * Cancels the current presence change subscription.
+ * @param {*} client the Microsoft Graph client
+ * @param {object} db an object that mediates the database access
+ */
+async function cancelSubscription(client, db) {
+    // remove the subscription from the database
+    const subscriptionId = db.getSubscription();
+
+    // cancel the subscription
+    if (subscriptionId) {
+        await client.api(`/subscriptions/${subscriptionId}`)
+            .delete();
+    }
+
+    // remove the subscription from the database
+    db.removeSubscription();
+}
+
 module.exports = {
     newSubscription,
+    cancelSubscription,
 }

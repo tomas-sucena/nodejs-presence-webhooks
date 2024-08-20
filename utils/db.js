@@ -15,12 +15,9 @@ function removeSubscription(db) {
         .get();
 
     // if a subscription exists, delete it
-    // and return its ID
     if (subscription) {
         db.prepare('DELETE FROM subscriptions where id = ?')
-            .get(subscription.id);
-
-        return subscription.id;
+            .run(subscription.id);
     }
 }
 
@@ -62,13 +59,10 @@ function removeUser(db, mail) {
         .get(mail);
     
     // if a subscription exists, delete it
-    // and return its ID
     if (subscription) {
         db.prepare('DELETE FROM users WHERE mail = ?')
             .run(mail);
     }
-
-    return subscription.id;
 }
 
 /**
