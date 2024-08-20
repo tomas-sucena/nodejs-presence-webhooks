@@ -24,21 +24,21 @@ module.exports = async function (req, res) {
         db.addUser(user);
 
         // verify if there is already a subscription
-        // if so, delete if
-        let subscription = db.getSubscription();
+        // if so, delete it
+        let subscriptionId = db.getSubscription();
 
-        if (subscription) {
-            await client.api(`/subscriptions/${subscription.id}`)
+        if (subscriptionId) {
+            await client.api(`/subscriptions/${subscriptionId}`)
                 .delete();
         }
 
-        // create the new subscription
-        subscription = await newSubscription(client, db, false);
-        console.log(`Subscribed to Teams presence changes (${subscription.id})`);
+        subscriptionId = await newSubscription(client, db, false);
+        console.log(`Subscribed to Teams presence changes (${subscriptionId})`);
 
         res.redirect('/home');
     }
     catch (error) {
+        console.log(error)
         req.session.error = error.message;
         res.redirect('/error');
     }

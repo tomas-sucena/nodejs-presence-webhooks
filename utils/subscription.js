@@ -5,7 +5,7 @@ const crypto = require('../utils/crypto');
  * @param {*} client the Microsoft Graph client
  * @param {object} db an object that mediates the database access
  * @param {boolean} rich boolean indicating if the notification is a rich notification
- * @returns a subscription
+ * @returns the ID of the newly created subscription
  */
 async function newSubscription(client, db, rich) {
     // ensure a certificate exists
@@ -47,7 +47,7 @@ async function newSubscription(client, db, rich) {
     // add the subscription to the database
     db.addSubscription(subscription.id);
 
-    return subscription;
+    return subscription.id;
 }
 
 module.exports = {
