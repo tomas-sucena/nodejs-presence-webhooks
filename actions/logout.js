@@ -1,4 +1,5 @@
 const auth = require('../utils/auth');
+const { cancelSubscription } = require('../utils/subscription');
 
 // POST /logout
 module.exports = async function (req, res) {
@@ -11,12 +12,7 @@ module.exports = async function (req, res) {
 
     try {
         // cancel the subscription, if it exists
-        const subscriptionId = db.removeSubscription();
-
-        if (subscriptionId) {
-            await client.api(`/subscriptions/${subscriptionId}`)
-                .delete();
-        }
+        await cancelSubscription(client, db);
 
         // remove the user's account from MSAL cache
         const userAccount = await msalClient
