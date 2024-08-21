@@ -58,15 +58,7 @@ async function newSubscription(client, db, rich) {
 async function cancelSubscription(client, db) {
     // verify if there is an active subscription
     // if so, retrieve its ID
-    const subscriptionId = 
-        // search for a subscription in the database
-        db.getSubscription()
-        // search for a subscription using Microsoft Graph
-        || (await client.api('/subscriptions')
-            .get())
-            .value
-            .find(sub => sub.applicationId === process.env.OAUTH_CLIENT_ID)
-            ?.id;
+    const subscriptionId = db.getSubscription();
 
     // cancel the subscription, if it exists
     if (subscriptionId) {
