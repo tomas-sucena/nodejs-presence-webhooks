@@ -18,6 +18,10 @@ function removeSubscription(db) {
     if (subscription) {
         db.prepare('DELETE FROM subscriptions where id = ?')
             .run(subscription.id);
+
+        // clear the user's table
+        db.prepare('DELETE FROM users')
+            .run();
     }
 }
 
