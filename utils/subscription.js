@@ -56,17 +56,26 @@ async function newSubscription(client, db, rich) {
  * @param {object} db an object that mediates the database access
  */
 async function cancelSubscription(client, db) {
-    // remove the subscription from the database
-    const subscriptionId = db.getSubscription();
+    // verify if there is an active subscription
+    // if so, retrieve its ID
+    const subscriptionId = 
+        // search for a subscription in the database
+        db.getSubscription()
+        // search for a subscription using Microsoft Graph
+        || (await client.api('/subscriptions')
+            .get())
+            .value
+            .find(sub => sub.applicationId === process.env.OAUTH_CLIENT_ID)
+            ?.id;
 
-    // cancel the subscription
+    // cancel the subscription, if it exists
     if (subscriptionId) {
         await client.api(`/subscriptions/${subscriptionId}`)
             .delete();
+            
+        // remove the subscription from the database
+        db.removeSubscription();
     }
-
-    // remove the subscription from the database
-    db.removeSubscription();
 }
 
 module.exports = {
