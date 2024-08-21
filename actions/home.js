@@ -21,7 +21,7 @@ module.exports = function (req, res) {
         <form method="POST" action="/subscribe">
             <label>
                 <strong>Email:</strong>
-                <input name="mail" placeholder="example@criticalmanufacturing.com">
+                <input name="mail" placeholder="example@criticalmanufacturing.com" required>
             </label>
             <button>Subscribe</button>
         </form>

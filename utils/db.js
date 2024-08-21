@@ -18,10 +18,6 @@ function removeSubscription(db) {
     if (subscription) {
         db.prepare('DELETE FROM subscriptions where id = ?')
             .run(subscription.id);
-
-        // clear the user's table
-        db.prepare('DELETE FROM users')
-            .run();
     }
 }
 
@@ -91,6 +87,15 @@ function countUsers(db) {
 }
 
 /**
+ * Removes all users from the list of users whose presence changes we are subscribing to.
+ * @param {Database} db the database
+ */
+function removeAllUsers(db) {
+    db.prepare('DELETE FROM users')
+        .run();
+}
+
+/**
  * Returns a comma-separated string containing the IDs of the users whose presence changes we are subscribing to.
  * @param {Database} db the database
  */
@@ -129,6 +134,7 @@ function DB(filePath) {
 
     this.addUser = addUser.bind(null, db);
     this.removeUser = removeUser.bind(null, db);
+    this.removeAllUsers = removeAllUsers.bind(null, db);
     this.getUsers = getUsers.bind(null, db);
     this.countUsers = countUsers.bind(null, db);
     this.listUserIDs = listUserIDs.bind(null, db);

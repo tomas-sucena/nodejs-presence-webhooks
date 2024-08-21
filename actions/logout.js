@@ -14,6 +14,9 @@ module.exports = async function (req, res) {
         // cancel the subscription, if it exists
         await cancelSubscription(client, db);
 
+        // remove all subscribed users
+        db.removeAllUsers();
+
         // remove the user's account from MSAL cache
         const userAccount = await msalClient
             .getTokenCache()
