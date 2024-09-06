@@ -62,6 +62,9 @@ module.exports = async function (req, res) {
     const { msalClient, userAccountId } = req.app.locals;
     const client = auth.getClient(msalClient, userAccountId);
 
+    // fetch the MQTT client
+    const mqttClient = req.app.locals.mqttClient;
+
     // process the notifications
     for (const notification of req.body.value) {
         // ensure the client state matches the expected value
@@ -81,6 +84,9 @@ module.exports = async function (req, res) {
             .get();
 
         // log the presence information
-        await new Presence(payload, user).log();
+        const presence = new Presence(payload, user, mqttClient);
+        
+        presence.changeColor();
+        presence.log();
     }
 };

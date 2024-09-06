@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const mqtt = require('mqtt');
 const session = require('express-session');
 
 const callback = require('./actions/callback');
@@ -13,7 +14,6 @@ const logout = require('./actions/logout');
 const subscribe = require('./actions/subscribe')
 const unsubscribe = require('./actions/unsubscribe');
 
-const auth = require('./utils/auth');
 const { DB } = require('./utils/db');
 
 // initialize the application
@@ -33,6 +33,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// initialize the MQTT client
+app.locals.mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_BROKER_ADDRESS}`);
 
 // set up the routes
 app.get('/callback', callback);
